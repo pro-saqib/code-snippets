@@ -1,0 +1,14 @@
+<div class="contact-item">
+  <i class="fas fa-envelope"></i>
+  <a href="#" onclick="revealEmail(); return false;">Click to reveal email</a>
+  <script type="text/javascript">
+    function revealEmail() {
+      var user = 'info';
+      var domain = 'tricon3d.com';
+      var element = document.getElementsByClassName('contact-item')[0].getElementsByTagName('a')[0];
+      element.href = 'mailto:' + user + '@' + domain;
+      element.innerHTML = user + '@' + domain;
+      element.removeAttribute('onclick');
+    }
+  </script>
+</div>
