@@ -1,0 +1,21 @@
+
+<script>
+// Assuming you have the HTML content in a variable named 'newContent'
+var newContent = '<div class="">' +
+  '<a target="_blank" href="#" class="">Click Me</a>' +
+  '</div>';
+
+// Find the target element
+var targetElement = document.querySelector('.class');
+
+// Check if the target element exists
+if (targetElement) {
+  // Create a temporary container element
+  var tempContainer = document.createElement('div');
+  tempContainer.innerHTML = newContent;
+
+  // Append the new content after the target element
+  targetElement.parentNode.insertBefore(tempContainer.firstChild, targetElement.nextSibling);
+}
+
+</script>
