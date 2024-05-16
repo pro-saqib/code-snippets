@@ -1,0 +1,77 @@
+
+// Add meta box to post edit screen
+function add_post_code_meta_box() {
+    add_meta_box(
+        'post_code_meta_box',
+        'Post Code',
+        'display_post_code_meta_box',
+        'post',
+        'side',
+        'default'
+    );
+}
+add_action('add_meta_boxes', 'add_post_code_meta_box');
+
+function display_post_code_meta_box($post) {
+    $post_code = get_post_meta($post->ID, '_post_code', true);
+    ?>
+    <label for="post_code">Post Code:</label>
+    <input type="text" name="post_code" id="post_code" value="<?php echo esc_attr($post_code); ?>" />
+    <?php
+}
+
+
+// Save the post code meta field
+function save_post_code_meta($post_id) {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!isset($_POST['post_code'])) return;
+    if (!current_user_can('edit_post', $post_id)) return;
+
+    update_post_meta($post_id, '_post_code', sanitize_text_field($_POST['post_code']));
+}
+add_action('save_post', 'save_post_code_meta');
+
+
+// Hook into the save post action to update slugs when posts are saved
+add_action('save_post', 'update_post_slug_on_save', 10, 3);
+
+function update_post_slug_on_save($post_id, $post, $update) {
+    // Check if this is a post, is not an auto-save, and is being updated
+    if ($post->post_type !== 'post' || wp_is_post_autosave($post_id) || !$update) {
+        return;
+    }
+
+    // Get the categories of the post
+    $categories = wp_get_post_categories($post_id);
+    $category_slugs = array_map(function($cat_id) {
+        $cat = get_category($cat_id);
+        return $cat->slug;
+    }, $categories);
+
+    // Check if the post category is "blogs" or "showcase"
+    $is_special_category = in_array('blogs', $category_slugs) || in_array('showcase', $category_slugs);
+
+    // Get the post code custom field
+    $post_code = get_post_meta($post_id, '_post_code', true);
+
+    // Get the post title
+    $title = $post->post_title;
+
+// Create the new slug
+if ($is_special_category) {
+    // Use regular slug construction with post code
+    $new_slug = sanitize_title(trim($post_code . ' ' . $title));
+} else {
+    // Replace post code with empty value
+    $new_slug = sanitize_title(trim($title));
+}
+
+    // Update the post slug if it's not already set to the new slug
+    if ($post->post_name !== $new_slug) {
+        wp_update_post(array(
+            'ID' => $post_id,
+            'post_name' => $new_slug
+        ));
+    }
+}
+

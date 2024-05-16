@@ -1,0 +1,34 @@
+// Hook into the save post action to update slugs when products are saved
+add_action('save_post', 'update_product_slug_on_save', 20, 3);
+
+function update_product_slug_on_save($post_id, $post, $update) {
+    // Check if this is a product and is not an auto-save
+    if ($post->post_type != 'product' || wp_is_post_autosave($post_id)) {
+        return;
+    }
+
+    // Get the product object
+    $product = wc_get_product($post_id);
+
+    // Get the product SKU
+    $sku = $product->get_sku();
+
+    // If SKU is empty, use the product ID as a fallback
+    if (!$sku) {
+        $sku = '';
+    }
+
+    // Get the product title
+    $title = $post->post_title;
+
+    // Create the new slug
+    $new_slug = sanitize_title($sku . '-' . $title);
+
+    // Update the post slug if it's not already set to the new slug
+    if ($post->post_name !== $new_slug) {
+        wp_update_post(array(
+            'ID' => $post_id,
+            'post_name' => $new_slug
+        ));
+    }
+}
