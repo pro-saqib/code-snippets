@@ -1,0 +1,9 @@
+function show_latest_products_on_archive($query) {
+    // Ensure this is only applied to the main WooCommerce product archive query
+    if (!is_admin() && $query->is_main_query() && is_post_type_archive('product')) {
+        // Set the query to order by date
+        $query->set('orderby', 'date');
+        $query->set('order', 'DESC');
+    }
+}
+add_action('pre_get_posts', 'show_latest_products_on_archive');
