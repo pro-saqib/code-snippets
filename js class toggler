@@ -1,0 +1,8 @@
+        document.addEventListener('DOMContentLoaded', function() {
+            var myDIV = document.getElementById('my-div');
+            var myBTN = document.getElementById('my-btn');
+
+            myBTN.addEventListener('click', function() {
+                myDIV.classList.toggle('expanded');
+            });
+        });
