@@ -13,7 +13,7 @@ function update_product_slug_on_save($post_id, $post, $update) {
     // Get the product SKU
     $sku = $product->get_sku();
 
-    // If SKU is empty, use the product ID as a fallback
+    // If SKU is empty, use an empty string
     if (!$sku) {
         $sku = '';
     }
@@ -21,14 +21,24 @@ function update_product_slug_on_save($post_id, $post, $update) {
     // Get the product title
     $title = $post->post_title;
 
-    // Create the new slug
-    $new_slug = sanitize_title($sku . '-' . $title);
+    // Sanitize title and SKU separately
+    $sanitized_title = sanitize_title($title);
+    $sanitized_sku = sanitize_title($sku);
 
-    // Update the post slug if it's not already set to the new slug
+    // Create the new slug in the format $post-title$/$_sku$
+    $new_slug = $sanitized_sku . '-' . $sanitized_title;
+
+    // Check if the slug has changed
     if ($post->post_name !== $new_slug) {
-        wp_update_post(array(
-            'ID' => $post_id,
-            'post_name' => $new_slug
-        ));
+        // Manually update the post slug
+        global $wpdb;
+        $wpdb->update(
+            $wpdb->posts,
+            array('post_name' => $new_slug),
+            array('ID' => $post_id)
+        );
+
+        // Clear cache to reflect changes
+        clean_post_cache($post_id);
     }
 }
